@@ -37,3 +37,8 @@ transcript-intelligence/outputs/prior_aggregated.json
 .idea/
 dataset/
 transcript-intelligence/data/transcripts.json
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
