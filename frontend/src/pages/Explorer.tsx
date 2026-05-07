@@ -202,17 +202,20 @@ export function Explorer() {
     URL.revokeObjectURL(url)
   }
 
-  const SelectFilter = ({ value, onChange, options }: {
-    value: string; onChange: (v: string) => void; options: string[]
+  const SelectFilter = ({ label, value, onChange, options }: {
+    label: string; value: string; onChange: (v: string) => void; options: string[]
   }) => (
-    <select
-      value={value}
-      onChange={e => onChange(e.target.value)}
-      className="bg-surface border border-border rounded-lg px-3 py-1.5 text-sm text-slate-300
-        focus:outline-none focus:border-blue-500 cursor-pointer"
-    >
-      {['All', ...options].map(o => <option key={o}>{o}</option>)}
-    </select>
+    <label className="flex items-center gap-1.5">
+      <span className="text-[10px] text-muted uppercase tracking-wider shrink-0">{label}</span>
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        className="bg-surface border border-border rounded-lg px-2.5 py-1.5 text-sm text-slate-300
+          focus:outline-none focus:border-blue-500 cursor-pointer"
+      >
+        {['All', ...options].map(o => <option key={o}>{o}</option>)}
+      </select>
+    </label>
   )
 
   return (
@@ -231,10 +234,10 @@ export function Explorer() {
                 text-sm text-slate-200 placeholder:text-muted focus:outline-none focus:border-blue-500"
             />
           </div>
-          <div className="flex gap-2 flex-wrap">
-            <SelectFilter value={callType}  onChange={setCallType}  options={['support','external','internal']} />
-            <SelectFilter value={sentiment} onChange={setSentiment} options={['positive','neutral','mixed','negative']} />
-            <SelectFilter value={urgency}   onChange={setUrgency}   options={['low','medium','high','critical']} />
+          <div className="flex gap-3 flex-wrap">
+            <SelectFilter label="Type"      value={callType}  onChange={setCallType}  options={['support','external','internal']} />
+            <SelectFilter label="Sentiment" value={sentiment} onChange={setSentiment} options={['positive','neutral','mixed','negative']} />
+            <SelectFilter label="Urgency"   value={urgency}   onChange={setUrgency}   options={['low','medium','high','critical']} />
           </div>
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted">{data?.total ?? 0} results</span>
