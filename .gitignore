@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment variables
+.env
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Streamlit
+.streamlit/
+
+# Generated pipeline outputs (too large / re-creatable)
+transcript-intelligence/outputs/cache.json
+transcript-intelligence/outputs/enriched.json
+transcript-intelligence/outputs/aggregated.json
+transcript-intelligence/outputs/prior_aggregated.json
+
+# Keep the outputs folder itself
+!transcript-intelligence/outputs/.gitkeep
+
+# Claude Code settings (local only)
+.claude/
+
+# IDE
+.vscode/
+.idea/
+dataset/
+transcript-intelligence/data/transcripts.json
