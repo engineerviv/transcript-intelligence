@@ -66,7 +66,7 @@ export function Dashboard() {
         <KpiCard value={total}      label="Transcripts"        sub="filtered" />
         <KpiCard value={topTopic}   label="Top Issue Category" />
         <KpiCard value={`${negPct}%`} label="Negative / Mixed" higherIsBad />
-        <KpiCard value={highUrg}    label="High Urgency Calls"  higherIsBad />
+        <KpiCard value={highUrg}    label="High / Critical Calls"  higherIsBad />
         <KpiCard value={atRiskCount} label="At-Risk Accounts"   higherIsBad />
       </div>
 
