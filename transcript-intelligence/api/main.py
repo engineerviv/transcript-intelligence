@@ -17,12 +17,13 @@ from pydantic import BaseModel
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from src.chatbot import answer_question_stream
+from src.agent import stream_agent_response
+from src.validation import validate_enriched
 from src.utils import load_json, outputs_ready
 
 # ── App setup ─────────────────────────────────────────────────────────────────
 
-app = FastAPI(title="Transcript Intelligence API", version="1.0.0")
+app = FastAPI(title="Transcript Intelligence API", version="2.0.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -34,11 +35,11 @@ app.add_middleware(
 
 # ── Data loading ──────────────────────────────────────────────────────────────
 
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))
-ENRICHED_PATH  = os.path.join(BASE_DIR, "outputs", "enriched.json")
+BASE_DIR        = os.path.dirname(os.path.dirname(__file__))
+ENRICHED_PATH   = os.path.join(BASE_DIR, "outputs", "enriched.json")
 AGGREGATED_PATH = os.path.join(BASE_DIR, "outputs", "aggregated.json")
 
-_enriched: list[dict] = []
+_enriched:   list[dict] = []
 _aggregated: dict = {}
 
 
@@ -115,13 +116,10 @@ def get_transcripts(
         ]
 
     total = len(results)
-    page  = results[offset : offset + limit]
+    page  = results[offset: offset + limit]
 
     # Strip full_transcript from list view for performance
-    slim = [
-        {k: v for k, v in t.items() if k != "full_transcript"}
-        for t in page
-    ]
+    slim = [{k: v for k, v in t.items() if k != "full_transcript"} for t in page]
     return {"transcripts": slim, "total": total}
 
 
@@ -142,6 +140,15 @@ def get_aggregated():
     return _aggregated
 
 
+@app.get("/api/validation")
+def get_validation():
+    """Run validation on the current enriched data and return the report."""
+    if not _enriched:
+        raise HTTPException(503, "Pipeline outputs not ready.")
+    report = validate_enriched(_enriched)
+    return report.to_dict()
+
+
 @app.post("/api/chat/stream")
 def chat_stream(body: ChatRequest):
     if not _enriched or not _aggregated:
@@ -151,7 +158,7 @@ def chat_stream(body: ChatRequest):
 
     def generate():
         try:
-            for chunk in answer_question_stream(
+            for chunk in stream_agent_response(
                 body.question, _enriched, _aggregated, history=history
             ):
                 yield f"data: {json.dumps({'text': chunk})}\n\n"
