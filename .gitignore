@@ -25,6 +25,8 @@ transcript-intelligence/outputs/cache.json
 transcript-intelligence/outputs/enriched.json
 transcript-intelligence/outputs/aggregated.json
 transcript-intelligence/outputs/prior_aggregated.json
+transcript-intelligence/outputs/faiss.index
+transcript-intelligence/outputs/faiss_meta.json
 
 # Keep the outputs folder itself
 !transcript-intelligence/outputs/.gitkeep

@@ -17,6 +17,9 @@ get_account_details  — lookup by account/company name
 
 from __future__ import annotations
 import json
+from dotenv import load_dotenv
+load_dotenv()
+
 from langchain_core.messages import HumanMessage, AIMessage
 from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI
@@ -147,7 +150,7 @@ def _build_agent(n_transcripts: int):
     model = ChatOpenAI(model="gpt-4o-mini", temperature=0, streaming=True)
     tools = [search_transcripts, get_statistics, get_account_details]
     system = SYSTEM_PROMPT.format(n=n_transcripts)
-    return create_react_agent(model, tools=tools, state_modifier=system)
+    return create_react_agent(model, tools=tools, prompt=system)
 
 
 def stream_agent_response(
