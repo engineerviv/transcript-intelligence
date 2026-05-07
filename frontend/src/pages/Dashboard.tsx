@@ -46,15 +46,18 @@ export function Dashboard() {
   const transcripts = txData?.transcripts ?? []
   const total = txData?.total ?? 0
 
-  // KPI values
-  const sentDist = agg.sentiment_distribution
+  // KPI values — derived from filtered transcripts so they update with filters
   const negPct = Math.round(
-    ((sentDist.negative?.count ?? 0) + (sentDist.mixed?.count ?? 0)) / Math.max(total, 1) * 100
+    transcripts.filter(t => t.sentiment === 'negative' || t.sentiment === 'mixed').length
+    / Math.max(total, 1) * 100
   )
-  const urgDist = agg.urgency_distribution
-  const highUrg = (urgDist.high?.count ?? 0) + (urgDist.critical?.count ?? 0)
-  const topTopic = agg.topic_frequency[0]?.topic ?? 'N/A'
-  const atRiskCount = agg.churn_risk_accounts.filter((a: AtRiskAccount) => a.churn_risk === 'high').length
+  const highUrg = transcripts.filter(t => t.urgency === 'high' || t.urgency === 'critical').length
+  const topicCounts = transcripts.reduce<Record<string, number>>((acc, t) => {
+    if (t.topic) acc[t.topic] = (acc[t.topic] ?? 0) + 1
+    return acc
+  }, {})
+  const topTopic = Object.entries(topicCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? 'N/A'
+  const atRiskCount = transcripts.filter(t => t.churn_risk === 'high').length
 
   return (
     <div className="space-y-6">
@@ -62,7 +65,7 @@ export function Dashboard() {
       <div className="grid grid-cols-5 gap-4">
         <KpiCard value={total}      label="Transcripts"        sub="filtered" />
         <KpiCard value={topTopic}   label="Top Issue Category" />
-        <KpiCard value={`${negPct}%`} label="Negative Sentiment" higherIsBad />
+        <KpiCard value={`${negPct}%`} label="Negative / Mixed" higherIsBad />
         <KpiCard value={highUrg}    label="High Urgency Calls"  higherIsBad />
         <KpiCard value={atRiskCount} label="At-Risk Accounts"   higherIsBad />
       </div>

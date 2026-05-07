@@ -12,6 +12,17 @@ function ToggleGroup<T extends string>({
   colorFn?: (v: T) => string
 }) {
   const toggle = (v: T) => {
+    // All selected (no filter) → isolate to just this one
+    if (selected.length === options.length) {
+      onChange([v])
+      return
+    }
+    // Only this one selected → reset to all
+    if (selected.length === 1 && selected[0] === v) {
+      onChange([...options])
+      return
+    }
+    // Otherwise add/remove normally
     const next = selected.includes(v) ? selected.filter(x => x !== v) : [...selected, v]
     if (next.length > 0) onChange(next)
   }
@@ -19,19 +30,18 @@ function ToggleGroup<T extends string>({
   return (
     <div className="flex flex-wrap gap-1.5">
       {options.map(v => {
-        const active = selected.includes(v)
         const color = colorFn?.(v)
+        const active = selected.includes(v)
         return (
           <button
             key={v}
             onClick={() => toggle(v)}
             className={cn(
-              'px-2.5 py-1 rounded-full text-xs font-medium border transition-all',
-              active
-                ? 'border-transparent text-white'
-                : 'border-border text-muted hover:border-slate-500 hover:text-slate-300',
+              'px-2.5 py-1 rounded-full text-xs font-semibold border transition-all duration-150',
+              active  && 'border-transparent text-white shadow-sm',
+              !active && 'border-border/30 text-slate-600 opacity-40 hover:opacity-70',
             )}
-            style={active && color ? { background: color + '33', borderColor: color + '66', color } : undefined}
+            style={active && color ? { backgroundColor: color, borderColor: color } : undefined}
           >
             {v}
           </button>

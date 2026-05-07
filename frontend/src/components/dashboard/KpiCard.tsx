@@ -18,7 +18,10 @@ export function KpiCard({ value, label, sub, deltaValue, higherIsBad = false }: 
 
   return (
     <div className="bg-surface rounded-xl border border-border p-5 text-center">
-      <div className="text-2xl font-bold text-slate-100 leading-tight truncate">{value}</div>
+      <div className={cn(
+        'font-bold text-slate-100 leading-tight break-words',
+        typeof value === 'string' && value.length > 10 ? 'text-lg' : 'text-2xl',
+      )}>{value}</div>
       <div className="text-[11px] text-muted uppercase tracking-wider mt-1.5">{label}</div>
       {sub && <div className="text-xs text-muted mt-0.5">{sub}</div>}
       {hasDelta && (
