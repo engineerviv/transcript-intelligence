@@ -35,7 +35,7 @@ function buildQuery(filters: TranscriptFilters): string {
 
 export const api = {
   health:      ()                        => get<{ status: string; pipeline_ready: boolean; transcript_count: number }>('/health'),
-  aggregated:  ()                        => get<AggregatedStats>('/aggregated'),
+  aggregated:  (filters: TranscriptFilters = {}) => get<AggregatedStats>(`/aggregated${buildQuery(filters)}`),
   transcripts: (filters: TranscriptFilters = {}) => get<TranscriptsResponse>(`/transcripts${buildQuery(filters)}`),
   transcript:  (id: string)             => get<Transcript>(`/transcripts/${id}`),
 

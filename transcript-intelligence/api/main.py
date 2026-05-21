@@ -18,6 +18,14 @@ from pydantic import BaseModel
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from src.agent import stream_agent_response
+from src.analysis import (
+    compute_topic_frequency, compute_sentiment_distribution,
+    compute_sentiment_by_call_type, compute_urgency_distribution,
+    compute_churn_risk_distribution, compute_top_negative_topics,
+    compute_high_urgency_topics, compute_intent_distribution,
+    compute_emotion_distribution, compute_churn_risk_accounts,
+    compute_avg_sentiment_score_by_type,
+)
 from src.validation import validate_enriched
 from src.utils import load_json, outputs_ready
 
@@ -134,10 +142,60 @@ def get_transcript(transcript_id: str):
 
 
 @app.get("/api/aggregated")
-def get_aggregated():
-    if not _aggregated:
+def get_aggregated(
+    call_type:  Optional[str] = Query(None),
+    sentiment:  Optional[str] = Query(None),
+    urgency:    Optional[str] = Query(None),
+    date_from:  Optional[str] = Query(None),
+    date_to:    Optional[str] = Query(None),
+    search:     Optional[str] = Query(None),
+):
+    if not _enriched:
         raise HTTPException(503, "Pipeline outputs not ready. Run run_pipeline.py first.")
-    return _aggregated
+
+    is_filtered = any([call_type, sentiment, urgency, date_from, date_to, search])
+    if not is_filtered:
+        return _aggregated
+
+    results = _enriched
+    if call_type:
+        types = call_type.split(",")
+        results = [t for t in results if t.get("call_type") in types]
+    if sentiment:
+        sents = sentiment.split(",")
+        results = [t for t in results if t.get("sentiment") in sents]
+    if urgency:
+        urgs = urgency.split(",")
+        results = [t for t in results if t.get("urgency") in urgs]
+    if date_from:
+        results = [t for t in results if t.get("start_time", "") >= date_from]
+    if date_to:
+        results = [t for t in results if t.get("start_time", "") <= date_to + "Z"]
+    if search:
+        q = search.lower()
+        results = [
+            t for t in results
+            if q in t.get("title", "").lower()
+            or q in t.get("summary", "").lower()
+            or q in t.get("topic", "").lower()
+        ]
+
+    stats = {
+        "total_transcripts": len(results),
+        "topic_frequency": compute_topic_frequency(results),
+        "sentiment_distribution": compute_sentiment_distribution(results),
+        "sentiment_by_call_type": compute_sentiment_by_call_type(results),
+        "urgency_distribution": compute_urgency_distribution(results),
+        "churn_risk_distribution": compute_churn_risk_distribution(results),
+        "top_negative_topics": compute_top_negative_topics(results),
+        "high_urgency_topics": compute_high_urgency_topics(results),
+        "intent_distribution": compute_intent_distribution(results),
+        "emotion_distribution": compute_emotion_distribution(results),
+        "churn_risk_accounts": compute_churn_risk_accounts(results),
+        "avg_sentiment_score_by_type": compute_avg_sentiment_score_by_type(results),
+        "executive_insights": _aggregated.get("executive_insights", {}),
+    }
+    return stats
 
 
 @app.get("/api/validation")
